@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2>📊 CLV Pro</h2>
+        </div>
+        <nav>
+            <a href="../index.html" class="nav-item">🏠 Dashboard</a>
+            <a href="customers.html" class="nav-item">👥 Customers</a>
+            <a href="predict.html" class="nav-item">🔮 Predict</a>
+            <a href="upload.html" class="nav-item active">📤 Upload</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <h1>📤 Upload CSV</h1>
+        </div>
+
+        <div class="form-card" style="max-width:700px">
+            <!-- Dataset Select -->
+            <div class="form-group" style="margin-bottom:24px">
+                <label>Select Platform</label>
+                <select id="dataset">
+                    <option value="AliExpress">AliExpress</option>
+                    <option value="ebay">eBay</option>
+                    <option value="lazada">Lazada</option>
+                    <option value="walmart">Walmart</option>
+                </select>
+            </div>
+
+            <!-- Upload Zone -->
+            <div class="upload-zone" id="uploadZone"
+                 onclick="document.getElementById('fileInput').click()"
+                 ondragover="event.preventDefault()"
+                 ondrop="handleDrop(event)">
+                <div style="font-size:3rem; margin-bottom:16px">📂</div>
+                <h3>Click or Drag & Drop CSV File</h3>
+                <p>Supports AliExpress, eBay, Lazada, Walmart CSV formats</p>
+                <p id="fileName"
+                   style="color:#7c6af7; margin-top:12px; font-weight:600"></p>
+            </div>
+
+            <input type="file" id="fileInput"
+                   accept=".csv" style="display:none"
+                   onchange="handleFileSelect(event)"/>
+
+            <button class="btn" id="uploadBtn"
+                    onclick="uploadFile()" disabled>
+                📤 Upload & Predict
+            </button>
+
+            <!-- Progress -->
+            <div id="progressDiv"
+                 style="display:none; margin-top:20px; color:#7c6af7">
+                ⏳ Processing... Please wait...
+            </div>
+
+            <!-- Results -->
+            <div class="result-card" id="resultCard">
+                <h3 style="color:#fff; margin-bottom:16px">
+                    ✅ Upload Complete!
+                </h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span class="result-label">Total Customers</span>
+                        <span class="result-value" id="resTotal">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Status</span>
+                        <span class="result-value"
+                              style="font-size:1rem;color:#34d399"
+                              id="resMessage">--</span>
+                    </div>
+                </div>
+
+                <!-- Preview Table -->
+                <h4 style="color:#9ca3af;
+                           margin-top:24px;
+                           margin-bottom:12px">
+                    Preview (first 5 customers)
+                </h4>
+                <table id="previewTable">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Predicted CLV</th>
+                            <th>Segment</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        let selectedFile = null;
+
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                document.getElementById("fileName").textContent =
+                    "✅ " + selectedFile.name;
+                document.getElementById("uploadBtn").disabled = false;
+            }
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            if (file && file.name.endsWith(".csv")) {
+                selectedFile = file;
+                document.getElementById("fileName").textContent =
+                    "✅ " + file.name;
+                document.getElementById("uploadBtn").disabled = false;
+            } else {
+                alert("Please drop a CSV file!");
+            }
+        }
+
+        async function uploadFile() {
+            if (!selectedFile) return;
+
+            const dataset  = document.getElementById("dataset").value;
+            const btn      = document.getElementById("uploadBtn");
+            const progress = document.getElementById("progressDiv");
+
+            btn.disabled        = true;
+            btn.textContent     = "Uploading...";
+            progress.style.display = "block";
+
+            try {
+                const result = await uploadCSV(dataset, selectedFile);
+
+                document.getElementById("resTotal").textContent =
+                    result.total || 0;
+                document.getElementById("resMessage").textContent =
+                    result.message || "Done!";
+
+                // Preview table
+                const preview = result.preview || [];
+                const tbody   = document.getElementById("previewBody");
+                tbody.innerHTML = "";
+                preview.forEach(c => {
+                    const badge = getBadgeClass(c.segment);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${c.customer_id}</td>
+                            <td style="color:#7c6af7;font-weight:700">
+                                ${formatCurrency(c.predicted_clv)}
+                            </td>
+                            <td>
+                                <span class="badge ${badge}">
+                                    ${c.segment}
+                                </span>
+                            </td>
+                        </tr>`;
+                });
+
+                document.getElementById("resultCard").classList.add("show");
+
+            } catch (e) {
+                alert("Upload failed! Make sure backend is running.");
+            }
+
+            btn.disabled        = false;
+            btn.textContent     = "📤 Upload & Predict";
+            progress.style.display = "none";
+        }
+    </script>
+</body>
+</html>

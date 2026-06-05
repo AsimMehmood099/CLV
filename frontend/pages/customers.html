@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2>📊 CLV Pro</h2>
+        </div>
+        <nav>
+            <a href="../index.html" class="nav-item">🏠 Dashboard</a>
+            <a href="customers.html" class="nav-item active">👥 Customers</a>
+            <a href="predict.html" class="nav-item">🔮 Predict</a>
+            <a href="upload.html" class="nav-item">📤 Upload</a>
+        </nav>
+        <div class="dataset-selector">
+            <label>Select Platform</label>
+            <select id="datasetSelect" onchange="loadCustomers()">
+                <option value="AliExpress">AliExpress</option>
+                <option value="ebay">eBay</option>
+                <option value="lazada">Lazada</option>
+                <option value="walmart">Walmart</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <h1>👥 All Customers</h1>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <input
+                    type="text"
+                    class="search-bar"
+                    id="searchInput"
+                    placeholder="🔍 Search by customer ID..."
+                    onkeyup="filterTable()"
+                />
+                <span id="customerCount"
+                      style="color:#6b7280; font-size:0.9rem"></span>
+            </div>
+
+            <table id="customersTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer ID</th>
+                        <th>Predicted CLV</th>
+                        <th>Segment</th>
+                        <th>Frequency</th>
+                        <th>Recency (days)</th>
+                        <th>T (days)</th>
+                        <th>Monetary Value</th>
+                    </tr>
+                </thead>
+                <tbody id="customersBody">
+                    <tr>
+                        <td colspan="8"
+                            style="text-align:center;color:#6b7280;padding:32px">
+                            Loading customers...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        let allCustomers = [];
+
+        async function loadCustomers() {
+            const dataset = document.getElementById("datasetSelect").value;
+            const tbody   = document.getElementById("customersBody");
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        style="text-align:center;color:#6b7280;padding:32px">
+                        Loading...
+                    </td>
+                </tr>`;
+
+            try {
+                const data = await getAllCustomers(dataset);
+                allCustomers = data.customers || [];
+                document.getElementById("customerCount").textContent =
+                    `${allCustomers.length} customers`;
+                renderTable(allCustomers);
+            } catch (e) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8"
+                            style="text-align:center;color:#ef4444;padding:32px">
+                            Error loading customers!
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        function renderTable(customers) {
+            const tbody = document.getElementById("customersBody");
+            tbody.innerHTML = "";
+
+            if (customers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8"
+                            style="text-align:center;color:#6b7280;padding:32px">
+                            No customers found!
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            customers.forEach((c, i) => {
+                const badge = getBadgeClass(c.segment);
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${c.customer_id}</td>
+                        <td style="color:#7c6af7;font-weight:700">
+                            ${formatCurrency(c.predicted_clv)}
+                        </td>
+                        <td>
+                            <span class="badge ${badge}">${c.segment}</span>
+                        </td>
+                        <td>${c.frequency}</td>
+                        <td>${c.recency}</td>
+                        <td>${c.T}</td>
+                        <td>${formatCurrency(c.monetary_value)}</td>
+                    </tr>`;
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById("searchInput")
+                            .value.toLowerCase();
+            const filtered = allCustomers.filter(c =>
+                c.customer_id.toLowerCase().includes(query)
+            );
+            document.getElementById("customerCount").textContent =
+                `${filtered.length} customers`;
+            renderTable(filtered);
+        }
+
+        window.addEventListener("load", loadCustomers);
+    </script>
+</body>
+</html>

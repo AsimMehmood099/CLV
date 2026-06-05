@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLV Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2>📊 CLV Pro</h2>
+        </div>
+        <nav>
+            <a href="index.html" class="nav-item active">🏠 Dashboard</a>
+            <a href="pages/customers.html" class="nav-item">👥 Customers</a>
+            <a href="pages/predict.html" class="nav-item">🔮 Predict</a>
+            <a href="pages/upload.html" class="nav-item">📤 Upload</a>
+        </nav>
+        <div class="dataset-selector">
+            <label>Select Platform</label>
+            <select id="datasetSelect" onchange="loadDashboard()">
+                <option value="AliExpress">AliExpress</option>
+                <option value="ebay">eBay</option>
+                <option value="lazada">Lazada</option>
+                <option value="walmart">Walmart</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Header -->
+        <div class="header">
+            <h1>Dashboard Overview</h1>
+            <span id="lastUpdated"></span>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Total Customers</span>
+                    <span class="kpi-value" id="totalCustomers">--</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">💰</div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Average CLV</span>
+                    <span class="kpi-value" id="avgClv">--</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">🏆</div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Max CLV</span>
+                    <span class="kpi-value" id="maxClv">--</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">📈</div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Total Revenue</span>
+                    <span class="kpi-value" id="totalRevenue">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Customer Segments</h3>
+                <canvas id="segmentChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Segment CLV Comparison</h3>
+                <canvas id="clvChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Customers -->
+        <div class="table-card">
+            <h3>🏆 Top 10 Customers by CLV</h3>
+            <table id="topTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer ID</th>
+                        <th>Predicted CLV</th>
+                        <th>Segment</th>
+                        <th>Frequency</th>
+                        <th>Monetary Value</th>
+                    </tr>
+                </thead>
+                <tbody id="topTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

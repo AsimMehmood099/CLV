@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict CLV</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2>📊 CLV Pro</h2>
+        </div>
+        <nav>
+            <a href="../index.html" class="nav-item">🏠 Dashboard</a>
+            <a href="customers.html" class="nav-item">👥 Customers</a>
+            <a href="predict.html" class="nav-item active">🔮 Predict</a>
+            <a href="upload.html" class="nav-item">📤 Upload</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <h1>🔮 Predict Customer CLV</h1>
+        </div>
+
+        <div class="form-card">
+            <h3 style="color:#fff; margin-bottom:24px">Enter Customer Details</h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Customer ID</label>
+                    <input type="text" id="customerId"
+                           placeholder="e.g. CUST_001" value="CUST_001"/>
+                </div>
+                <div class="form-group">
+                    <label>Platform / Dataset</label>
+                    <select id="dataset">
+                        <option value="AliExpress">AliExpress</option>
+                        <option value="ebay">eBay</option>
+                        <option value="lazada">Lazada</option>
+                        <option value="walmart">Walmart</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Frequency (No. of Purchases)</label>
+                    <input type="number" id="frequency"
+                           placeholder="e.g. 5" min="1" value="5"/>
+                </div>
+                <div class="form-group">
+                    <label>Recency (Days Since Last Purchase)</label>
+                    <input type="number" id="recency"
+                           placeholder="e.g. 30" min="0" value="30"/>
+                </div>
+                <div class="form-group">
+                    <label>T (Days Since First Purchase)</label>
+                    <input type="number" id="T"
+                           placeholder="e.g. 365" min="1" value="365"/>
+                </div>
+                <div class="form-group">
+                    <label>Monetary Value (Avg Order Value $)</label>
+                    <input type="number" id="monetary"
+                           placeholder="e.g. 150" min="0" value="150"/>
+                </div>
+            </div>
+
+            <button class="btn" onclick="runPrediction()">
+                🔮 Predict CLV
+            </button>
+
+            <!-- Result -->
+            <div class="result-card" id="resultCard">
+                <h3 style="color:#fff; margin-bottom:8px">
+                    ✅ Prediction Result
+                </h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span class="result-label">Predicted CLV</span>
+                        <span class="result-value" id="resCLV">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Segment</span>
+                        <span class="result-value" id="resSegment">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Customer ID</span>
+                        <span class="result-value"
+                              style="font-size:1rem" id="resCustomer">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Platform</span>
+                        <span class="result-value"
+                              style="font-size:1rem" id="resPlatform">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        async function runPrediction() {
+            const btn = document.querySelector(".btn");
+            btn.textContent = "Predicting...";
+            btn.disabled    = true;
+
+            const data = {
+                customer_id:    document.getElementById("customerId").value,
+                dataset:        document.getElementById("dataset").value,
+                frequency:      parseFloat(document.getElementById("frequency").value),
+                recency:        parseFloat(document.getElementById("recency").value),
+                T:              parseFloat(document.getElementById("T").value),
+                monetary_value: parseFloat(document.getElementById("monetary").value)
+            };
+
+            try {
+                const result = await predictCustomer(data);
+                document.getElementById("resCLV").textContent =
+                    formatCurrency(result.predicted_clv);
+                document.getElementById("resSegment").textContent =
+                    result.segment;
+                document.getElementById("resCustomer").textContent =
+                    result.customer_id;
+                document.getElementById("resPlatform").textContent =
+                    result.dataset;
+                document.getElementById("resultCard").classList.add("show");
+            } catch (e) {
+                alert("Prediction failed! Make sure backend is running.");
+            }
+
+            btn.textContent = "🔮 Predict CLV";
+            btn.disabled    = false;
+        }
+    </script>
+</body>
+</html>
