@@ -1,0 +1,14 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore executable programs
+*.exe
+
+# Ignore accidental system folders
+COMPUTERS/
+AppData/
+
+# Optional: Ignore massive files if they cause upload errors later
+# *.pkl
+# *.csv
